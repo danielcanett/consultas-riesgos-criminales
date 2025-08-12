@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pydantic
+numpy
+google-generativeai
+
+# Nuevas dependencias para datos reales
+requests
+pandas
+aiohttp
+scipy
+scikit-learn
+feedparser
+beautifulsoup4

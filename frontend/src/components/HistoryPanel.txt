@@ -1,0 +1,34 @@
+import React from 'react';
+
+function HistoryPanel({ historial }) {
+  if (!historial || historial.length === 0) return null;
+  return (
+    <div style={{marginTop: 36}}>
+      <h2>Historial de consultas</h2>
+      <table style={{width: '100%'}}>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Evento</th>
+            <th>Ubicación</th>
+            <th>Probabilidad</th>
+            <th>Pérdida</th>
+          </tr>
+        </thead>
+        <tbody>
+          {historial.slice().reverse().map(h => (
+            <tr key={h.id}>
+              <td>{(new Date(h.fecha)).toLocaleString()}</td>
+              <td>{h.tipo_evento}</td>
+              <td>{h.parametros.ubicacion}</td>
+              <td>{h.probabilidad * 100}%</td>
+              <td>${h.perdida_esperada.toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export default HistoryPanel;

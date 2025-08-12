@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ml-cdmx-01",
+    "name": "Centro de Distribución CDMX Norte",
+    "address": "Tultepec, Estado de México",
+    "lat": 19.7131,
+    "lng": -99.1102,
+    "ambito": "industrial_metro"
+  },
+  {
+    "id": "ml-mty-01",
+    "name": "Centro de Distribución Monterrey",
+    "address": "Lomas de la Paz, Nuevo León",
+    "lat": 25.7266,
+    "lng": -100.3111,
+    "ambito": "industrial_suburb"
+  },
+  {
+    "id": "ml-gdl-01",
+    "name": "Centro de Distribución Guadalajara",
+    "address": "Las Pintitas, Jalisco",
+    "lat": 20.5486,
+    "lng": -103.3013,
+    "ambito": "industrial_mixta"
+  },
+  {
+    "id": "ml-merida-01",
+    "name": "Centro de Distribución Mérida",
+    "address": "Mérida, Yucatán",
+    "lat": 21.1619,
+    "lng": -89.0249,
+    "ambito": "alta_seguridad"
+  },
+  {
+    "id": "ml-hgo-01",
+    "name": "Parque Industrial PLATAH",
+    "address": "Parque Industrial PLATAH, Tezontepec de Aldama, Hidalgo, CP 43880",
+    "lat": 19.913814687435444,
+    "lng": -98.84430394068863,
+    "ambito": "industrial_semiurb"
+  }
+]

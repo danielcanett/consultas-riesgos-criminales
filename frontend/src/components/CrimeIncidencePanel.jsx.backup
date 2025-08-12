@@ -1,0 +1,347 @@
+import React from 'react';
+import {
+  Card, CardContent, Typography, Box, Chip, LinearProgress,
+  Table, TableBody, TableCell, TableContainer, TableRow, Paper,
+  Divider, Alert, CircularProgress, Grid
+} from '@mui/material';
+import {
+  TrendingUp, TrendingDown, Warning, LocalPolice, 
+  LocationCity, Assessment, Timeline, Security, ReportProblem
+} from '@mui/icons-material';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+
+const CrimeIncidencePanel = ({ riskResults }) => {
+  // Adaptado para consumir la nueva estructura: { datosCriminalidad }
+  const crimeStats = riskResults?.datosCriminalidad || null;
+  if (!crimeStats) {
+    return (
+      <Card elevation={3} sx={{ mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <LocalPolice sx={{ mr: 2, color: 'primary.main' }} />
+            <Typography variant="h6" fontWeight="bold">
+              📊 Incidencia Delictiva Local
+            </Typography>
+          </Box>
+          <Alert severity="info" sx={{ mt: 2 }}>
+            No hay datos de incidencia delictiva disponibles para esta ubicación.
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+  // Mapear datos para visualización
+  const robberyIncidents = crimeStats.delitos_principales?.find(d => d.tipo.toLowerCase().includes('robo'))?.incidentes || 0;
+  const homicideIncidents = crimeStats.delitos_principales?.find(d => d.tipo.toLowerCase().includes('homicidio'))?.incidentes || 0;
+  const extorsionIncidents = crimeStats.delitos_principales?.find(d => d.tipo.toLowerCase().includes('extorsion'))?.incidentes || 0;
+  const totalIncidents = crimeStats.incidencia_total || (robberyIncidents + homicideIncidents + extorsionIncidents);
+  const mainCrimes = crimeStats.delitos_principales || [];
+  return (
+    <Card elevation={3} sx={{ mb: 3 }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <LocalPolice sx={{ mr: 2, color: 'primary.main' }} />
+          <Typography variant="h6" fontWeight="bold">
+            📊 Incidencia Delictiva Local
+          </Typography>
+        </Box>
+        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+          {crimeStats.municipio}, {crimeStats.estado} • Fuente: {crimeStats.fuente || 'SESNSP'}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Última actualización: {crimeStats.fecha_actualizacion || 'N/A'}
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h5" color="primary" fontWeight="bold">
+              {totalIncidents}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Incidentes totales (último registro)
+            </Typography>
+          </Grid>
+          {mainCrimes.map((delito, idx) => (
+            <Grid item xs={12} md={2} key={idx}>
+              <Typography variant="subtitle2" color="text.secondary">
+                {delito.tipo}
+              </Typography>
+              <Typography variant="h6" color="text.primary" fontWeight="bold">
+                {delito.incidentes}
+              </Typography>
+            </Grid>
+          ))}
+        </Grid>
+      </CardContent>
+    </Card>
+  );
+
+
+  // Si no hay datos, mostrar mensaje de carga o no disponible
+  if (!crimeStats) {
+    return (
+      <Card elevation={3} sx={{ mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <LocalPolice sx={{ mr: 2, color: 'primary.main' }} />
+            <Typography variant="h6" fontWeight="bold">
+              📊 Incidencia Delictiva Local
+            </Typography>
+          </Box>
+          <Alert severity="info" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              Los datos de incidencia delictiva se cargan después del análisis de riesgo. 
+              Realiza un cálculo de riesgo para ver las estadísticas criminales oficiales de la zona.
+            </Typography>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Calcular porcentajes y tendencias
+  const calculatePercentage = (value, total) => {
+    if (!total || total === 0) return 0;
+    return Math.round((value / total) * 100);
+  };
+
+  const robberyPercentage = calculatePercentage(crimeData.robberyIncidents, crimeData.totalIncidents);
+  const businessRobberyPercentage = calculatePercentage(crimeData.businessRobbery, crimeData.totalIncidents);
+  const vehicleTheftPercentage = calculatePercentage(crimeData.vehicleTheft, crimeData.totalIncidents);
+
+  // Determinar nivel de riesgo por zona
+  const getRiskLevel = (incidents) => {
+    if (incidents > 1000) return { level: 'ALTO', color: 'error', icon: <TrendingUp /> };
+    if (incidents > 500) return { level: 'MEDIO', color: 'warning', icon: <TrendingUp /> };
+    if (incidents > 100) return { level: 'BAJO-MEDIO', color: 'info', icon: <TrendingDown /> };
+    return { level: 'BAJO', color: 'success', icon: <TrendingDown /> };
+  };
+
+  const riskLevel = getRiskLevel(crimeData.totalIncidents);
+
+  return (
+    <Card elevation={3} sx={{ mb: 3 }}>
+      <CardContent>
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <LocalPolice sx={{ mr: 2, color: 'primary.main', fontSize: 28 }} />
+            <Box>
+              <Typography variant="h6" fontWeight="bold">
+                📊 Incidencia Delictiva Local
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Datos oficiales del gobierno federal
+              </Typography>
+            </Box>
+          </Box>
+          <Chip 
+            icon={riskLevel.icon} 
+            label={`Zona ${riskLevel.level}`}
+            color={riskLevel.color}
+            sx={{ fontWeight: 'bold' }}
+          />
+        </Box>
+
+        {/* Ubicación y Fuente */}
+        <Box sx={{ mb: 3, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <LocationCity sx={{ mr: 1, fontSize: 16, verticalAlign: 'middle' }} />
+            <strong>Ubicación:</strong> {crimeData.location}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Assessment sx={{ mr: 1, fontSize: 16, verticalAlign: 'middle' }} />
+            <strong>Fuente:</strong> {crimeData.dataSource}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            <Timeline sx={{ mr: 1, fontSize: 16, verticalAlign: 'middle' }} />
+            <strong>Última actualización:</strong> {crimeData.lastUpdate}
+          </Typography>
+        </Box>
+
+        {/* Estadísticas principales */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom fontWeight="bold">
+            🎯 Estadísticas Criminales Principales
+          </Typography>
+          
+          <TableContainer component={Paper} elevation={1}>
+            <Table size="small">
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="bold">
+                      📈 Total de Incidentes Registrados
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography variant="h6" color="error.main" fontWeight="bold">
+                      {crimeData.totalIncidents.toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+                
+                <TableRow>
+                  <TableCell>
+                    <Typography variant="body2">
+                      🔫 Robo
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                      <Typography variant="body1" fontWeight="bold">
+                        {crimeData.originalData ? `${crimeData.originalData.robo}%` : crimeData.robberyIncidents.toLocaleString()}
+                      </Typography>
+                      <Chip 
+                        label={`${robberyPercentage}%`} 
+                        size="small" 
+                        color={robberyPercentage > 50 ? 'error' : robberyPercentage > 25 ? 'warning' : 'success'}
+                      />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <Typography variant="body2">
+                      ⚰️ Homicidio
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                      <Typography variant="body1" fontWeight="bold">
+                        {crimeData.originalData ? `${crimeData.originalData.homicidio}%` : crimeData.vehicleTheft.toLocaleString()}
+                      </Typography>
+                      <Chip 
+                        label={`${vehicleTheftPercentage}%`} 
+                        size="small" 
+                        color={vehicleTheftPercentage > 30 ? 'error' : vehicleTheftPercentage > 15 ? 'warning' : 'success'}
+                      />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>
+                    <Typography variant="body2">
+                      🕵️‍♂️ Extorsión
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                      <Typography variant="body1" fontWeight="bold">
+                        {crimeData.originalData ? `${crimeData.originalData.extorsion}%` : crimeData.businessRobbery.toLocaleString()}
+                      </Typography>
+                      <Chip 
+                        label={`${businessRobberyPercentage}%`} 
+                        size="small" 
+                        color={businessRobberyPercentage > 20 ? 'error' : businessRobberyPercentage > 10 ? 'warning' : 'success'}
+                      />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+
+        {/* Gráfico de barras mejorado */}
+        {crimeData.mainCrimes && crimeData.mainCrimes.length > 0 && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom fontWeight="bold">
+              📈 Gráfico de Incidencia por Tipo de Delito
+            </Typography>
+            
+            <Box sx={{ height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={crimeData.mainCrimes}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="tipo" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis />
+                  <Tooltip 
+                    formatter={(value, name) => [value.toLocaleString(), 'Incidentes']}
+                    labelFormatter={(label) => `Tipo: ${label}`}
+                  />
+                  <Bar dataKey="incidentes" name="Incidentes">
+                    {crimeData.mainCrimes.map((entry, index) => {
+                      let color = '#4caf50';
+                      if (entry.incidentes > 400) color = '#f44336';
+                      else if (entry.incidentes > 200) color = '#ff9800';
+                      else if (entry.incidentes > 100) color = '#2196f3';
+                      return <Cell key={`cell-${index}`} fill={color} />;
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </Box>
+        )}
+
+        {/* Barras de progreso visuales */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom fontWeight="bold">
+            📊 Distribución por Tipo de Delito
+          </Typography>
+          
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">Robo</Typography>
+              <Typography variant="body2">{robberyPercentage}%</Typography>
+            </Box>
+            <LinearProgress 
+              variant="determinate" 
+              value={robberyPercentage} 
+              color={robberyPercentage > 50 ? 'error' : robberyPercentage > 25 ? 'warning' : 'success'}
+              sx={{ height: 8, borderRadius: 4 }}
+            />
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">Homicidio</Typography>
+              <Typography variant="body2">{vehicleTheftPercentage}%</Typography>
+            </Box>
+            <LinearProgress 
+              variant="determinate" 
+              value={vehicleTheftPercentage} 
+              color={vehicleTheftPercentage > 30 ? 'error' : vehicleTheftPercentage > 15 ? 'warning' : 'success'}
+              sx={{ height: 8, borderRadius: 4 }}
+            />
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">Extorsión</Typography>
+              <Typography variant="body2">{businessRobberyPercentage}%</Typography>
+            </Box>
+            <LinearProgress 
+              variant="determinate" 
+              value={businessRobberyPercentage} 
+              color={businessRobberyPercentage > 20 ? 'error' : businessRobberyPercentage > 10 ? 'warning' : 'success'}
+              sx={{ height: 8, borderRadius: 4 }}
+            />
+          </Box>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Interpretación y recomendaciones */}
+        <Box>
+          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            💡 <strong>Interpretación:</strong> Los datos mostrados provienen de fuentes oficiales del gobierno federal 
+            y reflejan la incidencia delictiva registrada en la zona. Un mayor número de incidentes no necesariamente 
+            indica mayor riesgo, ya que también refleja mejor vigilancia y registro por parte de las autoridades.
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default CrimeIncidencePanel;
